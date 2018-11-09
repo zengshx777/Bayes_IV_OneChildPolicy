@@ -8,18 +8,17 @@ source("JAGS_MODEL.R")
 
 #Define Logit function
 logit<-function(x){1/(1+exp(-x))}
-#for (res.id in c(3,4,7)){
-res.id=3
+for (res in 1:3){
 #Reformat Data to be suitable for JAGS Modeling
-  source("Data_Loading.R")  
+source("DataLoading.R")  
 covariate_index<-c("meduy","feduy","age","han")
   for (i in 1:4){
     #Response Level:Number of Categories observed
-    res.level=length(unique(data.jags[[i]][,response_index[res.id]]))
+    res.level=length(unique(data.jags[[i]][,response_index[res]]))
     
     #Formulate Data for jags input
     data.jags.input = list(
-      y = data.jags[[i]][, response_index[res.id]] + res.level - 5,
+      y = data.jags[[i]][, response_index[res]] + res.level - 5,
       X = as.matrix(data.jags[[i]][,covariate_index]),
       t = data.jags[[i]][, treatment_index],
       nsample = nrow(data.jags[[i]]),
@@ -91,10 +90,10 @@ covariate_index<-c("meduy","feduy","age","han")
         )    
     }
     #Save JAGS Object
-    assign(paste(response_index[res.id],i,"JAGSObject",sep="_"),stack.sim)
+    assign(paste(response_index[res],i,"JAGSObject",sep="_"),stack.sim)
     rm(stack.sim)
-    print(paste("==",res.id,i,"=="))
-  }  
-  save.image(file=paste(response_index[res.id],"result_monotonic_weight_model.RData",sep="_"))
-  
-#}
+    print(paste("==",res,i,"=="))
+  } 
+#  save.image(file=paste(response_index[res],"result_monotonic_weight_model.RData",sep="_"))
+}
+

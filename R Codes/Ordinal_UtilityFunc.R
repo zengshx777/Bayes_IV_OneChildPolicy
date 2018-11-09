@@ -50,7 +50,8 @@ evalbin<-function(A,B,alpha)
   return(t)
 }
 
-GetBound<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level)
+
+GetBound<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level,treat.ind=1,control.ind=0)
 {
   #This function derive the PRTE and TT for a given posterior sample
   #It basically follows the same procedure in "Ordinal MTE" but perform it
@@ -59,8 +60,7 @@ GetBound<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level)
   tryCatch({
   #Use the empirical distribution of X and Threshold Value
   #Extract Threshold Values
-  nsample=nrow(data)
-  ps<-MCMCSample[t,paste("d[",1:nsample,"]",sep="")]
+  ps<-MCMCSample[t,grep("d",colnames(MCMCSample))]
   y1_mean<-MCMCSample[t,paste("beta1[",1:ncov,"]",sep="")]%*%t(data[,covariate_index])+
     MCMCSample[t,paste("y1.tau[",data$rd.ind,"]",sep="")]
   y0_mean<-MCMCSample[t,paste("beta0[",1:ncov,"]",sep="")]%*%t(data[,covariate_index])+
@@ -130,14 +130,14 @@ GetBound<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level)
   p1_cell <- t(sapply(
     Y_1_latent,
     FUN = function(y) {
-      logit(y+MCMCSample[t, paste("c1[", 1:(res.level - 1), "]", sep ="")])
+      logit(y+MCMCSample[t, paste("c1[", 1:(res.level - 1), "]", sep ="")]+rep(treat.ind,res.level-1))
     }
   ))
   
   p0_cell <- t(sapply(
     Y_0_latent,
     FUN = function(y) {
-      logit(y+MCMCSample[t, paste("c0[", 1:(res.level - 1), "]", sep = "")])
+      logit(y+MCMCSample[t, paste("c0[", 1:(res.level - 1), "]", sep = "")]+rep(control.ind,res.level-1))
     }
   ))
   
@@ -192,3 +192,9 @@ GetBound<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level)
 })
 }
 ncov=length(covariate_index)
+
+#Evaluate the CI of Upper and Lower Bound
+eval_credible<-function(A,B,alpha=0.95)
+{
+  return(c(quantile(A,1-(1-alpha)/2,na.rm=T),quantile(B,(1-alpha)/2,na.rm=T)))
+}

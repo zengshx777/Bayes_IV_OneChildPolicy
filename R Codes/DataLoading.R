@@ -1,13 +1,13 @@
 #This Script reformats the data frame to the one for JAGS Sampling
-#Need to supply res.id:which response to examine
+#Need to supply res:which response to examine
 for (m in 1:4)
 {
 #Create dataframe for each subgroup
-data.try<-data.combine[[m]][,c(response_index[res.id],treatment_index,
+data.try<-data.combine[[m]][,c(response_index[res],treatment_index,
                      covariate_index,instrument_index,cluster_index)]
 #Extract Complete Data
 data.try<-data.try[complete.cases(data.try),]
-data.try<-subset(data.try,data.try[,response_index[res.id]]>0)
+data.try<-subset(data.try,data.try[,response_index[res]]>0)
 #extract the cluster with size greater than 10
 data.try<-subset(data.try,provcd_born%in%names(table(data.try$provcd_born))[
   table(data.try$provcd_born)>10])

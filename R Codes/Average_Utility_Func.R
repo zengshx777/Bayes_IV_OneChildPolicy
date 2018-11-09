@@ -1,13 +1,12 @@
 #Get Average Function
 library(msm)
 
-GetAverage<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level)
+GetAverage<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level,treat.ind=1,control.ind=0)
 {
-#  tryCatch({
+  tryCatch({
     #Use the empirical distribution of X and Threshold Value
     #Extract Threshold Values
-    nsample=nrow(data)
-    ps<-MCMCSample[t,paste("d[",1:nsample,"]",sep="")]
+    ps<-MCMCSample[t,grep("d",colnames(MCMCSample))]
     y1_mean<-MCMCSample[t,paste("beta1[",1:ncov,"]",sep="")]%*%t(data[,covariate_index])+
       MCMCSample[t,paste("y1.tau[",data$rd.ind,"]",sep="")]
     y0_mean<-MCMCSample[t,paste("beta0[",1:ncov,"]",sep="")]%*%t(data[,covariate_index])+
@@ -22,11 +21,8 @@ GetAverage<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level)
       sapply(
         Y_1_latent,
         FUN = function(x) {
-          res.level - sum(sapply(
-            MCMCSample[t, paste("c1[", 1:(res.level - 1), "]", sep = "")],
-            FUN = function(y) {
-              logit(y + x)
-            }
+          - sum(sapply(MCMCSample[t, paste("c1[", 1:(res.level - 1), "]", sep = "")]+rep(treat.ind,res.level-1),
+            FUN = function(y) { logit(y + x)}
           ))
         }
       )
@@ -35,8 +31,8 @@ GetAverage<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level)
       sapply(
         Y_0_latent,
         FUN = function(x) {
-          res.level - sum(sapply(
-            MCMCSample[t, paste("c0[", 1:(res.level - 1), "]", sep = "")],
+          - sum(sapply(
+            MCMCSample[t, paste("c0[", 1:(res.level - 1), "]", sep = "")]+rep(control.ind,res.level-1),
             FUN = function(y) {
               logit(y + x)
             }
@@ -52,8 +48,8 @@ GetAverage<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level)
       sapply(
         Y_1_latent,
         FUN = function(x) {
-          res.level - sum(sapply(
-            MCMCSample[t, paste("c1[", 1:(res.level - 1), "]", sep = "")],
+           -sum(sapply(
+            MCMCSample[t, paste("c1[", 1:(res.level - 1), "]", sep = "")]+rep(treat.ind,res.level-1),
             FUN = function(y) {
               logit(y + x)
             }
@@ -65,8 +61,8 @@ GetAverage<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level)
       sapply(
         Y_0_latent,
         FUN = function(x) {
-          res.level - sum(sapply(
-            MCMCSample[t, paste("c0[", 1:(res.level - 1), "]", sep = "")],
+          -sum(sapply(
+            MCMCSample[t, paste("c0[", 1:(res.level - 1), "]", sep = "")]+rep(control.ind,res.level-1),
             FUN = function(y) {
               logit(y + x)
             }
@@ -76,5 +72,6 @@ GetAverage<-function(t,MCMCSample,data,treated.id,ncov,zmax,zmin,res.level)
     att=mean(Y_1_expect-Y_0_expect)
     
     return(c(prte,att))
-#  },error = function(e) {print(paste("==",t,"==","With Error")) return(c(NA,NA))}  )
+  },error = function(e) {print(paste("==",t,"==","With Error")) 
+   return(c(NA,NA))}  )
 }

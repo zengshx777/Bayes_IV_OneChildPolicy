@@ -7,7 +7,7 @@ rr.model<-function()
     #and random effect
     mud[j]=tinter+inprod(theta,X[j,])+t.tau[rd.ind[j]]
     #Draw Principal strata from normal distribution
-    d[j]~dnorm(mud[j],1)
+    d[j]~dnorm(mud[j],taud.prec)
     #Compare the value of strata and IV to determine the treatment 
     #status
     determine[j]=-Z[j]-d[j]
@@ -58,10 +58,15 @@ rr.model<-function()
     t.tau[i]~dnorm(0,t.tauprec)
   }
   
-  #Random Effect Precision Parameter Prior
-  y1.tauprec~dgamma(1.0E-6,1.0E-6)
-  y0.tauprec~dgamma(1.0E-6,1.0E-6)
-  t.tauprec~dgamma(1.0E-6,1.0E-6)
+  #Random Effect Precision Parameter Prior  
+  #y1.tauprec~dgamma(1.0E-6,1.0E-6)
+  #y0.tauprec~dgamma(1.0E-6,1.0E-6)
+  #t.tauprec~dgamma(1.0E-6,1.0E-6)
+  
+  
+  y1.tauprec~dt(0,25,1);T(0,)
+  y0.tauprec~dt(0,25,1);T(0,)
+  t.tauprec~dt(0,25,1);T(0,)
   taud.prec~dgamma(1.0E-6,1.0E-6)
   
   #Coefficents for Covariates Prior
@@ -88,7 +93,7 @@ rr.model.den<-function()
   {
     #Process for Treatment Assignment
     mud[j]=tinter+inprod(theta,X[j,])+t.tau[rd.ind[j]]
-    d[j]~dnorm(mud[j], 1)
+    d[j]~dnorm(mud[j], taud.prec)
     determine[j]=-Z[j]-d[j]
     t[j]~dinterval(determine[j],0)
     
@@ -131,9 +136,14 @@ rr.model.den<-function()
   }
   
   #Random Effect Precision
-  y1.tauprec~dgamma(1.0E-6,1.0E-6)
-  y0.tauprec~dgamma(1.0E-6,1.0E-6)
-  t.tauprec~dgamma(1.0E-6,1.0E-6)
+  #y1.tauprec~dgamma(1.0E-6,1.0E-6)
+  #y0.tauprec~dgamma(1.0E-6,1.0E-6)
+  #t.tauprec~dgamma(1.0E-6,1.0E-6)
+  
+  
+  y1.tauprec~dt(0,25,1);T(0,)
+  y0.tauprec~dt(0,25,1);T(0,)
+  t.tauprec~dt(0,25,1);T(0,)
   taud.prec~dgamma(1.0E-6,1.0E-6)
   
   #Coefficents for Covariates
